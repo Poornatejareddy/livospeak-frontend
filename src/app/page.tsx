@@ -1108,9 +1108,11 @@ export default function Home() {
                         <Sparkles className="w-3.5 h-3.5" />
                         Explain Why Pronunciation
                       </h4>
-                      <span className="text-[10px] bg-zinc-800/80 px-2 py-0.5 rounded border border-zinc-700/50 font-mono">
-                        {selectedWord.start.toFixed(1)}s - {selectedWord.end.toFixed(1)}s
-                      </span>
+                      {typeof selectedWord.start === "number" && typeof selectedWord.end === "number" && (
+                        <span className="text-[10px] bg-zinc-800/80 px-2 py-0.5 rounded border border-zinc-700/50 font-mono">
+                          {selectedWord.start.toFixed(1)}s - {selectedWord.end.toFixed(1)}s
+                        </span>
+                      )}
                     </div>
 
                     {/* Word in big */}
@@ -1121,17 +1123,19 @@ export default function Home() {
                         </span>
                         
                         {/* Word playback snippet */}
-                        <button
-                          onClick={() => {
-                            // Find index of selected word to match playing state
-                            const idx = result.words.findIndex((w: any) => w.word === selectedWord.word && w.start === selectedWord.start);
-                            playWordAudioSegment(selectedWord, idx !== -1 ? idx : 0);
-                          }}
-                          className="w-8 h-8 rounded-lg bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-300 border border-zinc-700/60 transition"
-                          title="Listen to your pronunciation"
-                        >
-                          <Volume2 className="w-4 h-4" />
-                        </button>
+                        {typeof selectedWord.start === "number" && (
+                          <button
+                            onClick={() => {
+                              // Find index of selected word to match playing state
+                              const idx = result.words.findIndex((w: any) => w.word === selectedWord.word && w.start === selectedWord.start);
+                              playWordAudioSegment(selectedWord, idx !== -1 ? idx : 0);
+                            }}
+                            className="w-8 h-8 rounded-lg bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-300 border border-zinc-700/60 transition"
+                            title="Listen to your pronunciation"
+                          >
+                            <Volume2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                       
                       {selectedWord.expected_pronunciation ? (
