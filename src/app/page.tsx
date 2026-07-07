@@ -79,6 +79,72 @@ export default function Home() {
   // File Input Ref
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // History state
+  const [history, setHistory] = useState<any[]>([]);
+
+  // Load history list from backend
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/history`);
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch history:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  const selectHistoryItem = async (id: string) => {
+    setStep("loading");
+    setErrorMessage(null);
+    try {
+      const res = await fetch(`${API_URL}/api/history/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setResult(data);
+        
+        // Auto select first mistake if available
+        if (data.mistakes && data.mistakes.length > 0) {
+          const firstMistake = data.mistakes[0];
+          const wordInfo = data.words.find((w: any) => w.word.toLowerCase().replace(/[.,!?;:"]/g, "") === firstMistake.word.toLowerCase());
+          setSelectedWord(wordInfo ? { ...wordInfo, ...firstMistake } : firstMistake);
+        } else if (data.words && data.words.length > 0) {
+          setSelectedWord(data.words[0]);
+        }
+
+        // Initialize practice checkboxes
+        const checks: Record<string, boolean> = {};
+        data.practice_plan.practice_words.forEach((w: string) => {
+          checks[`word-${w}`] = false;
+        });
+        data.practice_plan.practice_sentences.forEach((s: string, idx: number) => {
+          checks[`sentence-${idx}`] = false;
+        });
+        data.practice_plan.tongue_twisters.forEach((t: string, idx: number) => {
+          checks[`twister-${idx}`] = false;
+        });
+        setPracticeChecked(checks);
+
+        // Clear audio file & URL since we are viewing historical run
+        setAudioFile(null);
+        setAudioUrl(null);
+        setStep("dashboard");
+      } else {
+        setErrorMessage("Failed to load historical record details.");
+        setStep("landing");
+      }
+    } catch (err) {
+      console.error("Error fetching history detail:", err);
+      setErrorMessage("Could not connect to server to fetch historical record.");
+      setStep("landing");
+    }
+  };
+
   // Dynamic loading messages list
   const loadingMessages = [
     "Uploading audio payload to secure container...",
@@ -289,6 +355,7 @@ export default function Home() {
 
       setUploadProgress(100);
       setStep("dashboard");
+      fetchHistory();
     } catch (err: any) {
       console.error("Upload error:", err);
       setErrorMessage(err.message || "Something went wrong during speech processing. Please check backend connection.");
@@ -401,6 +468,20 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-4 text-sm">
+          {history && history.length > 0 && (
+            <button 
+              onClick={() => {
+                setStep("landing");
+                setTimeout(() => {
+                  document.getElementById("history-section")?.scrollIntoView({ behavior: "smooth" });
+                }, 100);
+              }}
+              className="text-zinc-400 hover:text-zinc-200 transition flex items-center gap-1.5 text-xs font-semibold mr-2 border-r border-zinc-800 pr-4"
+            >
+              <Clock className="w-3.5 h-3.5 text-violet-400" />
+              History ({history.length})
+            </button>
+          )}
           <div className="hidden md:flex items-center gap-2 text-zinc-400">
             <Lock className="w-3.5 h-3.5 text-emerald-500" />
             <span>DPDP Compliant & Privacy First</span>
@@ -500,6 +581,62 @@ export default function Home() {
                 We value your speech privacy. Your audio recording is parsed in-memory, transferred securely over HTTPS, and immediately deleted from backend servers after processing. No audio files or personal data are stored permanently.
               </div>
             </div>
+
+            {/* Previous Analyses (MongoDB History) */}
+            {history && history.length > 0 && (
+              <div id="history-section" className="w-full max-w-4xl mx-auto pt-12 space-y-6 text-left border-t border-zinc-800/60">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-xl font-bold tracking-tight text-zinc-200 flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-violet-400" />
+                      Previous Speaking Sessions
+                    </h3>
+                    <p className="text-xs text-zinc-500 mt-0.5">Click on any past session to load its pronunciation dashboard.</p>
+                  </div>
+                  <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded font-mono font-semibold shrink-0">
+                    MongoDB History Connected
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {history.map((item) => (
+                    <div 
+                      key={item.id} 
+                      onClick={() => selectHistoryItem(item.id)}
+                      className="glass-panel glass-panel-hover p-5 rounded-2xl cursor-pointer transition border border-zinc-800/80 flex flex-col justify-between space-y-3 hover:scale-[1.01] hover:border-violet-500/30"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-1.5 min-w-0">
+                          <span className="text-[10px] text-zinc-500 font-medium font-mono block">
+                            {item.timestamp ? new Date(item.timestamp).toLocaleString(undefined, {
+                              month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
+                            }) : "Recent Session"}
+                          </span>
+                          <p className="text-xs text-zinc-400 line-clamp-2 italic pr-2">
+                            "{item.transcript}"
+                          </p>
+                        </div>
+                        {item.scores && (
+                          <div className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold shrink-0 text-center flex flex-col items-center justify-center min-w-[50px] ${getScoreColor(item.scores.overall)}`}>
+                            <span className="text-lg tracking-tighter leading-none">{item.scores.overall}</span>
+                            <span className="text-[8px] uppercase tracking-wider text-zinc-400 font-extrabold mt-0.5">Pts</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-[11px] text-zinc-500 pt-2 border-t border-zinc-800/40">
+                        <div className="flex gap-3">
+                          <span>Speed: <strong className="text-zinc-300">{item.speech_rate?.wpm || 0} WPM</strong></span>
+                          <span>Length: <strong className="text-zinc-300">{item.duration?.toFixed(1) || 0}s</strong></span>
+                        </div>
+                        <span className="text-violet-400 font-semibold flex items-center gap-0.5 hover:text-violet-300 text-xs">
+                          View details <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
