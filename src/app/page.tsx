@@ -194,10 +194,10 @@ export default function Home() {
     if (recordingState === "recording") {
       recordingTimerRef.current = setInterval(() => {
         setRecordDuration((prev) => {
-          if (prev >= 45) {
-            // Force stop at 45 seconds
+          if (prev >= 60) {
+            // Force stop at 60 seconds
             stopRecording();
-            return 45;
+            return 60;
           }
           return prev + 1;
         });
@@ -291,8 +291,8 @@ export default function Home() {
     audio.src = URL.createObjectURL(file);
     audio.addEventListener("loadedmetadata", () => {
       const duration = audio.duration;
-      if (duration < 30.0 || duration > 45.0) {
-        setErrorMessage(`Audio duration must be between 30 and 45 seconds. (Your file: ${duration.toFixed(1)}s)`);
+      if (duration < 1.0 || duration > 60.0) {
+        setErrorMessage(`Audio duration must be between 1 and 60 seconds. (Your file: ${duration.toFixed(1)}s)`);
         setAudioFile(null);
         setAudioUrl(null);
       } else {
@@ -519,7 +519,7 @@ export default function Home() {
                 </span>
               </h1>
               <p className="max-w-2xl mx-auto text-zinc-400 text-base md:text-lg font-light leading-relaxed">
-                Record or upload 30–45 seconds of speech. Our AI analyzes your articulation, fluency, and clarity, providing an interactive transcript with word-by-word feedback and a custom practice plan.
+                Record or upload 1–60 seconds of speech. Our AI analyzes your articulation, fluency, and clarity, providing an interactive transcript with word-by-word feedback and a custom practice plan.
               </p>
             </div>
 
@@ -652,7 +652,7 @@ export default function Home() {
 
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-extrabold tracking-tight">Record or Upload Your Speech</h2>
-              <p className="text-zinc-400 text-sm">Provide an English speech sample between 30 and 45 seconds long.</p>
+              <p className="text-zinc-400 text-sm">Provide an English speech sample between 1 and 60 seconds long.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -787,7 +787,7 @@ export default function Home() {
                     <div className="space-y-1">
                       <h4 className="font-semibold text-zinc-200">Drag & Drop Audio</h4>
                       <p className="text-zinc-400 text-xs px-2">Supported formats: <strong className="text-zinc-300">MP3, WAV, M4A</strong>.</p>
-                      <p className="text-zinc-500 text-[10px]">Audio must be strictly between 30 and 45 seconds.</p>
+                      <p className="text-zinc-500 text-[10px]">Audio must be strictly between 1 and 60 seconds.</p>
                     </div>
                     <span className="inline-block text-xs font-semibold text-violet-400 hover:text-violet-300 underline">
                       Browse Files
