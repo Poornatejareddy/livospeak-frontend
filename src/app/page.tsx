@@ -343,7 +343,9 @@ export default function Home() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || "Audio analysis failed.");
+        setErrorMessage(errorData.detail || "Audio analysis failed.");
+        setStep("upload");
+        return;
       }
 
       const data = await response.json();
