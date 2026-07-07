@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 
 // API Endpoint configuration
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://livospeak-backend.onrender.com";
 
 interface WordDetail {
   word: string;
