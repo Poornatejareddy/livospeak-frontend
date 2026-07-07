@@ -597,6 +597,81 @@ export default function Home() {
                     MongoDB History Connected
                   </span>
                 </div>
+
+                {/* Creative Analytics Dashboard Summary */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-2">
+                  <div className="glass-panel p-4 rounded-xl border border-zinc-800/80 flex flex-col justify-between">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-500 block">Overall Fluency & Pacing</span>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-3xl font-black text-white">
+                        {Math.round(history.reduce((sum, item) => sum + (item.speech_rate?.wpm || 0), 0) / history.length)}
+                      </span>
+                      <span className="text-xs text-zinc-400 font-medium">Avg WPM</span>
+                    </div>
+                    <span className="text-[11px] text-zinc-400 mt-2 block">
+                      Target speaking range is 110–145 WPM.
+                    </span>
+                  </div>
+
+                  <div className="glass-panel p-4 rounded-xl border border-zinc-800/80 flex flex-col justify-between relative overflow-hidden">
+                    <div className="absolute top-2 right-2">
+                      <Award className="w-4 h-4 text-violet-400" />
+                    </div>
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-500 block">Average Coaching Score</span>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-3xl font-black text-violet-400">
+                        {Math.round(history.reduce((sum, item) => sum + (item.scores?.overall || 0), 0) / history.length)}
+                      </span>
+                      <span className="text-xs text-zinc-400 font-medium">/ 99 Pts</span>
+                    </div>
+                    <span className="text-[11px] text-zinc-300 font-semibold mt-2 block">
+                      {(() => {
+                        const avg = Math.round(history.reduce((sum, item) => sum + (item.scores?.overall || 0), 0) / history.length);
+                        if (avg >= 85) return "🏆 Expert Articulation";
+                        if (avg >= 70) return "💪 Intermediate Fluency";
+                        return "📈 Developing Pronunciation";
+                      })()}
+                    </span>
+                  </div>
+
+                  <div className="glass-panel p-4 rounded-xl border border-zinc-800/80 flex flex-col justify-between">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-500 block">Speaking Progress</span>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-3xl font-black text-white">{history.length}</span>
+                      <span className="text-xs text-zinc-400 font-medium">Practice Runs</span>
+                    </div>
+                    <div className="mt-2">
+                      {history.length > 1 ? (
+                        (() => {
+                          const diff = (history[0]?.scores?.overall || 0) - (history[history.length - 1]?.scores?.overall || 0);
+                          if (diff > 0) {
+                            return (
+                              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-medium border border-emerald-500/20">
+                                <TrendingUp className="w-3 h-3 animate-bounce" />
+                                +{diff} Pts overall improvement!
+                              </span>
+                            );
+                          } else if (diff < 0) {
+                            return (
+                              <span className="text-[11px] text-zinc-400">
+                                Practice regularly to raise your scores!
+                              </span>
+                            );
+                          } else {
+                            return (
+                              <span className="text-[11px] text-zinc-400">
+                                Consistent progress tracked.
+                              </span>
+                            );
+                          }
+                        })()
+                      ) : (
+                        <span className="text-[11px] text-zinc-500">Record another session to trace progress.</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {history.map((item) => (
                     <div 
@@ -650,9 +725,13 @@ export default function Home() {
               &larr; Back to home
             </button>
 
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-3 flex flex-col items-center">
               <h2 className="text-3xl font-extrabold tracking-tight">Record or Upload Your Speech</h2>
               <p className="text-zinc-400 text-sm">Provide an English speech sample between 1 and 60 seconds long.</p>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-medium">
+                <Lock className="w-3.5 h-3.5" />
+                Do not worry, we do not store your audio!
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
