@@ -1488,7 +1488,7 @@ export default function Home() {
       <footer className="w-full border-t border-zinc-850 bg-zinc-950/40 py-6 px-6 mt-12 z-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
           <div>
-            &copy; 2026 LivoSpeak AI. Developed in accordance with best engineering and privacy principles.
+            &copy; 2026 LivoSpeak AI. Developed by K Poorna Teja Reddy.
           </div>
           <div className="flex gap-4">
             <span className="hover:text-zinc-400 cursor-pointer" onClick={() => setStep("landing")}>Home</span>
