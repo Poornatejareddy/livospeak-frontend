@@ -24,7 +24,8 @@ import {
   Languages,
   ChevronRight,
   TrendingUp,
-  FileCheck
+  FileCheck,
+  Trash2
 } from "lucide-react";
 
 // API Endpoint configuration
@@ -94,7 +95,25 @@ export default function Home() {
       console.error("Failed to fetch history:", err);
     }
   };
-
+  const deleteHistoryItem = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent opening the detail card
+    if (!confirm("Are you sure you want to delete this speaking record from your history?")) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/api/history/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        fetchHistory();
+      } else {
+        alert("Failed to delete record.");
+      }
+    } catch (err) {
+      console.error("Error deleting history item:", err);
+      alert("Could not connect to server to delete record.");
+    }
+  };
   useEffect(() => {
     fetchHistory();
   }, []);
@@ -703,9 +722,18 @@ export default function Home() {
                           <span>Speed: <strong className="text-zinc-300">{item.speech_rate?.wpm || 0} WPM</strong></span>
                           <span>Length: <strong className="text-zinc-300">{item.duration?.toFixed(1) || 0}s</strong></span>
                         </div>
-                        <span className="text-violet-400 font-semibold flex items-center gap-0.5 hover:text-violet-300 text-xs">
-                          View details <ChevronRight className="w-3.5 h-3.5" />
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => deleteHistoryItem(item.id, e)}
+                            className="text-zinc-500 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition flex items-center justify-center"
+                            title="Delete Session History"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="text-violet-400 font-semibold flex items-center gap-0.5 hover:text-violet-300 text-xs">
+                            View details <ChevronRight className="w-3.5 h-3.5" />
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))}
